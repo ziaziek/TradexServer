@@ -7,25 +7,19 @@ package com.przemo.tradexserver.implementations;
 import com.przemo.tradex.data.Accounts;
 import com.przemo.tradex.data.Equities;
 import com.przemo.tradex.data.EquitiesTypes;
+import com.przemo.tradex.data.OrderTypes;
 import com.przemo.tradex.data.Transactions;
 import com.przemo.tradex.data.UserSessions;
 import com.przemo.tradex.data.Users;
 import com.przemo.tradex.interfaces.IInfoController;
 import com.przemo.tradexserver.helpers.AccountsHelper;
 import com.przemo.tradexserver.helpers.UserSessionsHelper;
-import com.przemo.tradexserver.helpers.UsersHelper;
-import exceptions.SessionBrokeException;
-import java.lang.reflect.Field;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.hibernate.Transaction;
 
 /**
@@ -142,6 +136,15 @@ public class InfoController extends DataRequestController implements IInfoContro
             }
         }
         return ret;
+    }
+
+    @Override
+    public List<OrderTypes> requestAvailableOrderTypes() throws RemoteException {
+        if(getCurrentDBSession()){
+            return session.createQuery("from OrderTypes").list();
+        } else {
+            return null;
+        }
     }
     
 }
