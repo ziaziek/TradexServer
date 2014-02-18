@@ -6,6 +6,7 @@ package com.przemo.tradexserver.implementations;
 
 import com.przemo.tradex.data.Accounts;
 import com.przemo.tradex.data.Equities;
+import com.przemo.tradex.data.EquitiesPriceHistory;
 import com.przemo.tradex.data.EquitiesTypes;
 import com.przemo.tradex.data.OrderTypes;
 import com.przemo.tradex.data.Transactions;
@@ -67,19 +68,73 @@ public class InfoController extends DataRequestController implements IInfoContro
         }
     }
 
+    /**
+     * Requests quotation at the given moment
+     * @param date
+     * @param instrument
+     * @param sessionId
+     * @return
+     * @throws RemoteException 
+     */
     @Override
     public Equities requestQuotation(Date date, Object instrument, String sessionId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(getCurrentDBSession() && isSessionOpen(sessionId)){
+            updateSessionInfo(sessionId);
+            Equities eq = (Equities) session.getNamedQuery("findEquitiesAtDate").setParameter("dt", date).uniqueResult();
+            clearSession();
+            return eq;
+        } else {
+            return null;
+        }
     }
 
+    /**
+     * Request information about user's activity - login and logouts
+     * @param dateFrom
+     * @param dateTo
+     * @param SessionId
+     * @return
+     * @throws RemoteException 
+     */
     @Override
     public List<UserSessions> requestActivity(Date dateFrom, Date dateTo, String SessionId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(getCurrentDBSession() && isSessionOpen(SessionId)){
+            updateSessionInfo(SessionId);
+            List<UserSessions>usList = session.createQuery("from UserSessions where loginTime>=:df and loginTime<=:dt")
+                    .setParameter("df", dateFrom).setParameter("dt", dateTo).list();
+            //remove sentsitive information
+            if(usList!=null){
+                for(UserSessions us: usList){
+                    us.setId(0);
+                    us.setSessionKey("");
+                    us.setUsers(null);
+                }
+            }
+            clearSession();
+            return usList;
+        } else {
+            return null;
+        }
     }
 
+    /**
+     * Requests information on EquitiesPrices from the given time range
+     * @param dateFrom
+     * @param dateTo
+     * @param equityId
+     * @param sessionId
+     * @return
+     * @throws RemoteException 
+     */
     @Override
-    public List<Equities> requestTimeRangeData(Date dateFrom, Date dateTo, int equityId, String sessionId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<EquitiesPriceHistory> requestTimeRangeData(Date dateFrom, Date dateTo, Equities equityId, String sessionId) throws RemoteException {
+        if(getCurrentDBSession() && isSessionOpen(sessionId)){
+            updateSessionInfo(sessionId);
+            return session.getNamedQuery("findEquitiesBetweenDates").setParameter("df", dateFrom).setParameter("dt", dateTo)
+                    .setParameter("eqid", equityId).list();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -138,6 +193,11 @@ public class InfoController extends DataRequestController implements IInfoContro
         return ret;
     }
 
+    /**
+     * Requests available instruments list
+     * @return
+     * @throws RemoteException 
+     */
     @Override
     public List<OrderTypes> requestAvailableOrderTypes() throws RemoteException {
         if(getCurrentDBSession()){
