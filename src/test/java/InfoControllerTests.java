@@ -5,6 +5,8 @@
 
 import com.przemo.tradex.data.Accounts;
 import com.przemo.tradex.data.Equities;
+import com.przemo.tradex.data.EquitiesPriceHistory;
+import com.przemo.tradex.data.OrderTypes;
 import com.przemo.tradex.data.Transactions;
 import com.przemo.tradex.interfaces.IInfoController;
 import com.przemo.tradexserver.implementations.InfoController;
@@ -12,6 +14,7 @@ import com.przemo.tradexserver.implementations.LoginController;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -100,6 +103,39 @@ public class InfoControllerTests extends TestCase {
         }
     }
     
+    public void testAvailableOrdersTypes() throws RemoteException{
+        List<OrderTypes> oTypes = ic.requestAvailableOrderTypes();
+        assertNotNull(oTypes);
+        assertFalse(oTypes.isEmpty());
+    }
+    
+    public void testTimeRangeData() throws RemoteException{
+        Calendar cf = Calendar.getInstance();
+        Calendar ct = Calendar.getInstance();
+        cf.add(Calendar.MONTH, -12);
+        Equities  eq = ic.requestAvailableInstruments(ssid).iterator().next();
+        assertNotNull(eq);
+        List<EquitiesPriceHistory> eqList = ic.requestTimeRangeData(cf.getTime(), ct.getTime(), eq, ssid);
+        assertNotNull(eqList);
+        assertTrue("Empty history list!", eqList.size()>0);
+        //pick the first item from the list and check that the fields are not null's
+        EquitiesPriceHistory eqItem = eqList.get(0);
+        assertNotNull(eqItem);
+        assertTrue(eqItem.getAskPrice()>0);
+        assertTrue(eqItem.getRecordDate().compareTo(new Date())<=0);
+    }
+    
+    public void testRequestQuotation() throws RemoteException{
+        Calendar ct = Calendar.getInstance();
+        Equities  eq = ic.requestAvailableInstruments(ssid).iterator().next();
+        assertNotNull(eq);
+        Equities quot = ic.requestQuotation(ct.getTime(), eq, ssid);
+        assertNotNull(quot);
+        assertNotNull(quot.getEquitySymbol());
+        assertTrue(quot.getAskPrice()>0);
+        assertTrue(quot.getBidPrice()>0);
+    }
+            
     private boolean changePassword(String pw) throws RemoteException{
         Map<String,Object> ps = new HashMap<>();
         ps.put(IInfoController.editUserParamsNames[0], pw);
