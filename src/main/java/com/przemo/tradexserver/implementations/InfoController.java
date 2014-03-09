@@ -48,7 +48,8 @@ public class InfoController extends DataRequestController implements IInfoContro
                         }
                         if(dateTo!=null){
                             ctempTo=dateTo;
-                        } 
+                        }
+                        session.clear();
                         List<Transactions> trList = session.createQuery("from Transactions t where t.transactionDate>=:df and t.transactionDate<:dt "
                             + " and t.ordersByBuyerOrderId.users=:uid").setParameter("df", ctempFrom).setParameter("dt", ctempTo)
                             .setParameter("uid", u).list();
@@ -62,6 +63,7 @@ public class InfoController extends DataRequestController implements IInfoContro
     @Override
     public Set<Equities> requestAvailableInstruments(String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
+            session.clear();
             return new HashSet<>( session.createQuery("from Equities").list());           
         } else {
             return null;
@@ -80,6 +82,7 @@ public class InfoController extends DataRequestController implements IInfoContro
     public Equities requestQuotation(Date date, Object instrument, String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             updateSessionInfo(sessionId);
+            session.clear();
             Equities eq = (Equities) session.getNamedQuery("findEquitiesAtDate").setParameter("dt", date).uniqueResult();
             clearSession();
             return eq;
@@ -100,6 +103,7 @@ public class InfoController extends DataRequestController implements IInfoContro
     public List<UserSessions> requestActivity(Date dateFrom, Date dateTo, String SessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(SessionId)){
             updateSessionInfo(SessionId);
+            session.clear();
             List<UserSessions>usList = session.createQuery("from UserSessions where loginTime>=:df and loginTime<=:dt")
                     .setParameter("df", dateFrom).setParameter("dt", dateTo).list();
             //remove sentsitive information
@@ -130,6 +134,7 @@ public class InfoController extends DataRequestController implements IInfoContro
     public List<EquitiesPriceHistory> requestTimeRangeData(Date dateFrom, Date dateTo, Equities equityId, String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             updateSessionInfo(sessionId);
+            session.clear();
             return session.getNamedQuery("findEquitiesBetweenDates").setParameter("df", dateFrom).setParameter("dt", dateTo)
                     .setParameter("eqid", equityId).list();
         } else {
@@ -173,6 +178,7 @@ public class InfoController extends DataRequestController implements IInfoContro
         if (getCurrentDBSession() && isSessionOpen(sessionId) && userData != null && !userData.isEmpty()) {
             Users u = UserSessionsHelper.findSessionBySessionId(session, sessionId).getUsers();
             if (u != null) {
+                session.clear();
                 for (String sp : editUserParamsNames) {
                     if (userData.containsKey(sp)) {
                         if(sp.equals("password")){ //not very elegant, but reflection won't work here, as userData elements are objects
