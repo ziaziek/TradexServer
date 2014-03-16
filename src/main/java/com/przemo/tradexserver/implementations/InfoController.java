@@ -64,7 +64,7 @@ public class InfoController extends DataRequestController implements IInfoContro
     public Set<Equities> requestAvailableInstruments(String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             session.clear();
-            return new HashSet<>( session.createQuery("from Equities").list());           
+            return new HashSet<>( session.createQuery("from Equities order by equitySymbol").list());           
         } else {
             return null;
         }
