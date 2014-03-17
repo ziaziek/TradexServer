@@ -16,11 +16,15 @@ import com.przemo.tradex.interfaces.IInfoController;
 import com.przemo.tradexserver.helpers.AccountsHelper;
 import com.przemo.tradexserver.helpers.UserSessionsHelper;
 import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import org.hibernate.Transaction;
 
 /**
@@ -64,7 +68,8 @@ public class InfoController extends DataRequestController implements IInfoContro
     public Set<Equities> requestAvailableInstruments(String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             session.clear();
-            return new HashSet<>( session.createQuery("from Equities order by equitySymbol").list());           
+            List<Equities> ret = session.createQuery("from Equities order by equitySymbol").list();
+            return new LinkedHashSet<>(ret);           
         } else {
             return null;
         }
