@@ -109,7 +109,7 @@ public class InfoController extends DataRequestController implements IInfoContro
         if(getCurrentDBSession() && isSessionOpen(SessionId)){
             updateSessionInfo(SessionId);
             session.clear();
-            List<UserSessions>usList = session.createQuery("from UserSessions where loginTime>=:df and loginTime<=:dt")
+            List<UserSessions>usList = session.createQuery("from UserSessions where loginTime>=:df and loginTime<=:dt order by loginTime")
                     .setParameter("df", dateFrom).setParameter("dt", dateTo).list();
             //remove sentsitive information
             if(usList!=null){
