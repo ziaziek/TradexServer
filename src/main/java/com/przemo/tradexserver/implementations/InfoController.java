@@ -16,15 +16,11 @@ import com.przemo.tradex.interfaces.IInfoController;
 import com.przemo.tradexserver.helpers.AccountsHelper;
 import com.przemo.tradexserver.helpers.UserSessionsHelper;
 import java.rmi.RemoteException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import org.hibernate.Transaction;
 
 /**
@@ -84,11 +80,11 @@ public class InfoController extends DataRequestController implements IInfoContro
      * @throws RemoteException 
      */
     @Override
-    public Equities requestQuotation(Date date, Object instrument, String sessionId) throws RemoteException {
+    public Equities requestQuotation(Date date, com.przemo.tradex.data.Equities instrument, String sessionId) throws RemoteException {
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             updateSessionInfo(sessionId);
             session.clear();
-            Equities eq = (Equities) session.getNamedQuery("findEquitiesAtDate").setParameter("dt", date).uniqueResult();
+            Equities eq = (Equities) session.getNamedQuery("findEquitiesAtDate").setParameter("dt", date).setParameter("eqid", instrument).uniqueResult();
             clearSession();
             return eq;
         } else {
