@@ -56,6 +56,7 @@ public class InfoController extends DataRequestController implements IInfoContro
                         return trList;
                     }                  
                 }
+                clearSession();
         } 
         return null;
     }
@@ -65,6 +66,7 @@ public class InfoController extends DataRequestController implements IInfoContro
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             session.clear();
             List<Equities> ret = session.createQuery("from Equities order by equitySymbol").list();
+            clearSession();
             return new LinkedHashSet<>(ret);           
         } else {
             return null;
@@ -81,8 +83,8 @@ public class InfoController extends DataRequestController implements IInfoContro
      */
     @Override
     public Equities requestQuotation(Date date, com.przemo.tradex.data.Equities instrument, String sessionId) throws RemoteException {
-        if(getCurrentDBSession() && isSessionOpen(sessionId)){
-            updateSessionInfo(sessionId);
+        updateSessionInfo(sessionId);
+        if(getCurrentDBSession() && isSessionOpen(sessionId)){ 
             session.clear();
             Equities eq = (Equities) session.getNamedQuery("findEquitiesAtDate").setParameter("dt", date).setParameter("eqid", instrument).uniqueResult();
             clearSession();
@@ -102,8 +104,8 @@ public class InfoController extends DataRequestController implements IInfoContro
      */
     @Override
     public List<UserSessions> requestActivity(Date dateFrom, Date dateTo, String SessionId) throws RemoteException {
-        if(getCurrentDBSession() && isSessionOpen(SessionId)){
-            updateSessionInfo(SessionId);
+        updateSessionInfo(SessionId);
+        if(getCurrentDBSession() && isSessionOpen(SessionId)){    
             session.clear();
             List<UserSessions>usList = session.createQuery("from UserSessions where loginTime>=:df and loginTime<=:dt order by loginTime")
                     .setParameter("df", dateFrom).setParameter("dt", dateTo).list();
@@ -133,9 +135,10 @@ public class InfoController extends DataRequestController implements IInfoContro
      */
     @Override
     public List<EquitiesPriceHistory> requestTimeRangeData(Date dateFrom, Date dateTo, Equities equityId, String sessionId) throws RemoteException {
-        if(getCurrentDBSession() && isSessionOpen(sessionId)){
-            updateSessionInfo(sessionId);
+        updateSessionInfo(sessionId);
+        if(getCurrentDBSession() && isSessionOpen(sessionId)){       
             session.clear();
+            clearSession();
             return session.getNamedQuery("findEquitiesBetweenDates").setParameter("df", dateFrom).setParameter("dt", dateTo)
                     .setParameter("eqid", equityId).list();
         } else {
@@ -189,9 +192,9 @@ public class InfoController extends DataRequestController implements IInfoContro
                     }
                 }
                 Transaction tx = session.beginTransaction();
-                session.saveOrUpdate(u);
-                updateSessionInfo(sessionId);
+                session.saveOrUpdate(u);              
                 tx.commit();
+                updateSessionInfo(sessionId);
                 ret=true;
             } else {
                 ret = false;

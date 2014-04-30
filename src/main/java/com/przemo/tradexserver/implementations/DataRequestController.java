@@ -8,6 +8,7 @@ import com.przemo.tradex.data.UserSessions;
 import com.przemo.tradexserver.helpers.UserSessionsHelper;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.hibernate.cfg.AnnotationConfiguration;
  */
 public class DataRequestController extends UnicastRemoteObject {
     
+    protected Connection con = null;
     protected Session session = null;
     protected final int sessionExpiryTime = 10; // number of minutes of inactivity
     
@@ -47,6 +49,7 @@ public class DataRequestController extends UnicastRemoteObject {
                    session.saveOrUpdate(usList);
                }
            }
+           clearSession();
         }       
     }
     
@@ -62,7 +65,7 @@ public class DataRequestController extends UnicastRemoteObject {
      */
     public void clearSession(){
         if(session!=null && session.isOpen()){
-          session.close();  
+          con = session.disconnect();  
         }  
     }
     

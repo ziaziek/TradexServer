@@ -39,6 +39,7 @@ public class OrdersController extends DataRequestController implements IOrdersCo
     @Override
     public long placeOrder(Equities equityId, double amount, Date dateValid, OrderTypes orderType, String sessionId) throws RemoteException {
         long r = -1;
+        updateSessionInfo(sessionId);
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             Orders newOrder = new Orders();
             newOrder.setEquities(equityId);
@@ -48,8 +49,7 @@ public class OrdersController extends DataRequestController implements IOrdersCo
             newOrder.setValidThru(dateValid);
             newOrder.setUsers(UsersHelper.findUsersById(session, UserSessionsHelper.findSessionBySessionId(session, sessionId).getUsers().getId()));
             Transaction tx = session.beginTransaction();
-            session.saveOrUpdate(newOrder);
-            updateSessionInfo(sessionId);
+            session.saveOrUpdate(newOrder);        
             tx.commit();
             r = newOrder.getId();
             clearSession();          
@@ -66,15 +66,16 @@ public class OrdersController extends DataRequestController implements IOrdersCo
      */
     @Override
     public int removeOrder(long orderId, String sessionId) throws RemoteException {
+        updateSessionInfo(sessionId);
         if(getCurrentDBSession() && isSessionOpen(sessionId)){
             Orders ord = (Orders) session.get(Orders.class, orderId);
             if(ord!=null){
                 Transaction tx = session.beginTransaction();
-                session.delete(ord);
-                updateSessionInfo(sessionId);
+                session.delete(ord);             
                 tx.commit();
                 return 0;
             }
+            clearSession();
         }
         return -1;
     }
