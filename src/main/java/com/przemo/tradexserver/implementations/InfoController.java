@@ -9,6 +9,7 @@ import com.przemo.tradex.data.Equities;
 import com.przemo.tradex.data.EquitiesPriceHistory;
 import com.przemo.tradex.data.EquitiesTypes;
 import com.przemo.tradex.data.OrderTypes;
+import com.przemo.tradex.data.Orders;
 import com.przemo.tradex.data.Transactions;
 import com.przemo.tradex.data.UserSessions;
 import com.przemo.tradex.data.Users;
@@ -215,6 +216,20 @@ public class InfoController extends DataRequestController implements IInfoContro
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<Orders> requestOrders(String sessionId, boolean active) throws RemoteException {
+        List<Orders> ret = null;
+        if(getCurrentDBSession() && isSessionOpen(sessionId)){
+            updateSessionInfo(sessionId);
+            Users u = UserSessionsHelper.findSessionBySessionId(session, sessionId).getUsers();       
+            if(u!=null){       
+                ret=session.getNamedQuery("findUserOrders").setParameter("uid", u).list();
+                session.clear();
+            }
+        }
+        return ret;
     }
     
 }

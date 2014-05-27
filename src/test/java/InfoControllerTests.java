@@ -3,19 +3,13 @@
  * and open the template in the editor.
  */
 
-import com.przemo.tradex.data.Accounts;
 import com.przemo.tradex.data.Equities;
-import com.przemo.tradex.data.EquitiesPriceHistory;
-import com.przemo.tradex.data.OrderTypes;
-import com.przemo.tradex.data.Transactions;
+import com.przemo.tradex.data.Orders;
 import com.przemo.tradex.interfaces.IInfoController;
 import com.przemo.tradexserver.implementations.InfoController;
 import com.przemo.tradexserver.implementations.LoginController;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -153,6 +147,17 @@ public class InfoControllerTests extends TestCase {
                Equities eq1Item = eq1Iter.next();
                assertEquals(eqItem.getEquitySymbol(), eq1Item.getEquitySymbol());
            }
+        }
+    }
+    
+    public void testRequestOrders() throws RemoteException{
+        List<Orders> ord = ic.requestOrders(ssid, true);
+        assertNotNull(ord);
+        if (ord.size()>0){
+            Orders o = ord.get(0);
+            assertNotNull(o);
+            assertNotNull(o.getUsers());
+            assertTrue(o.getUsers().getId()>0);
         }
     }
             
