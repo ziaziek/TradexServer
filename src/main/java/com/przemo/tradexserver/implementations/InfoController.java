@@ -225,9 +225,9 @@ public class InfoController extends DataRequestController implements IInfoContro
             updateSessionInfo(sessionId);
             Users u = UserSessionsHelper.findSessionBySessionId(session, sessionId).getUsers();       
             if(u!=null){       
-                ret=session.getNamedQuery("findUserOrders").setParameter("uid", u).list();
-                session.clear();
+                ret=session.getNamedQuery("findUserOrders").setParameter("uid", u).list();             
             }
+            session.clear();
         }
         return ret;
     }
